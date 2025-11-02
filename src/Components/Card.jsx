@@ -1,102 +1,48 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "./Card.css";
-import { FaStar, FaRegStar } from "react-icons/fa";
 
-const Card = ({ note, backend, user, token, onFavUpdate }) => {
+const Card = ({ note }) => {
   const [downloading, setDownloading] = useState(false);
   const [viewing, setViewing] = useState(false);
-  const [isFav, setIsFav] = useState(false);
 
-  useEffect(() => {
-    setIsFav(user?.favoriteNotes?.includes(note._id) ?? false);
-  }, [user, note._id]);
+  const handleView = () => {
+    setViewing(true);
+    if (note.fileUrl) window.open(note.fileUrl, "_blank");
+    else alert("File URL not available");
+    setViewing(false);
+  };
 
   const handleDownload = async () => {
+    setDownloading(true);
     try {
-      setDownloading(true);
-      const res = await fetch(`${backend}/notes/${note._id}`);
+      if (!note.fileUrl) {
+        alert("File URL not available");
+        return;
+      }
 
-      if (!res.ok) throw new Error("Failed to fetch file");
+      const res = await fetch(note.fileUrl);
       const blob = await res.blob();
-
-      const extension = note.filename?.split(".").pop() || "pdf";
       const url = window.URL.createObjectURL(blob);
+
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${note.title || "file"}.${extension}`;
+      a.download = `${note.title || "file"}.pdf`;
       document.body.appendChild(a);
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error(err);
-      alert("Failed to download file");
+      alert("Download failed");
     } finally {
       setDownloading(false);
     }
   };
 
-  const handleView = async () => {
-    try {
-      setViewing(true);
-      const res = await fetch(`${backend}/notes/${note._id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error("Failed to fetch file for viewing");
-      const blob = await res.blob();
-
-      const extension = note.filename?.split(".").pop().toLowerCase();
-      let mime = blob.type;
-      if (!mime || mime === "application/octet-stream") {
-        if (extension === "pdf") mime = "application/pdf";
-        else if (extension === "doc") mime = "application/msword";
-        else if (extension === "docx")
-          mime =
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-      }
-
-      const blobUrl = window.URL.createObjectURL(
-        new Blob([blob], { type: mime })
-      );
-      window.open(blobUrl, "_blank");
-    } catch (err) {
-      console.error(err);
-      alert("Failed to view file");
-    } finally {
-      setViewing(false);
-    }
-  };
-
-  // const toggleFavourite = async () => {
-  //   try {
-  //     const method = isFav ? "DELETE" : "POST";
-  //     const res = await fetch(`${backend}/notes/${note._id}/favorite`, {
-  //       method,
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //         "Content-Type": "application/json",
-  //       },
-  //     });
-  //     if (!res.ok) throw new Error("Failed to update favourite");
-  //     const data = await res.json();
-  //     setIsFav(!isFav);
-  //     if (onFavUpdate) onFavUpdate(data.favoriteNotes);
-  //   } catch (err) {
-  //     console.error(err);
-  //     alert("Could not update favourite status");
-  //   }
-  // };
-
   return (
     <li className="note-card">
       <div className="note-info">
         <strong className="title">{note.title}</strong>
-        {/* <p>Regulation: {note.regulation?.name}</p>
-        <p>Branch: {note.branch?.name}</p>
-        <p>
-          Subject: {note.subject?.name} ({note.subject?.code})
-        </p>
-        <p>Semester: {note.semester}</p> */}
         <p className="metaData">
           Uploaded by <strong>{note.uploadedBy?.name || "Unknown"}</strong> on{" "}
           <strong>{new Date(note.createdAt).toLocaleDateString()}</strong>
@@ -111,13 +57,12 @@ const Card = ({ note, backend, user, token, onFavUpdate }) => {
         >
           {viewing ? "Opening..." : "View"}
         </button>
-
         <button
           className="download-btn action-btn"
           onClick={handleDownload}
           disabled={downloading}
         >
-          {downloading ? <span className="spinner"></span> : "Download"}
+          {downloading ? <span className="spinner" /> : "Download"}
         </button>
       </div>
     </li>

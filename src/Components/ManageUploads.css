@@ -1,0 +1,200 @@
+.mu-container {
+  padding: 2rem;
+  background: transparent;
+  height: 100vh;
+  overflow-y: auto; /* enable vertical scrolling */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+  padding-bottom: 20vh;
+}
+
+/* Hide scrollbar for WebKit browsers (Chrome, Safari, Edge) */
+.mu-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Filters */
+.mu-filters-card {
+  background: white;
+  padding: 1rem 1.5rem;
+  border-radius: 15px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 1.5rem;
+}
+
+.mu-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.mu-filters-card select {
+  width: 49%;
+}
+
+.mu-clear-btn {
+  color: var(--third-color);
+  background: none;
+  cursor: pointer;
+  font-weight: bolder;
+  width: fit-content;
+  padding: 0;
+  margin: 0;
+}
+
+/* Cards layout */
+.mu-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: flex-start;
+}
+
+.mu-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  flex: 0 0 30%; /* 3 per row max */
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  min-height: 180px;
+}
+
+.mu-card h4 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.mu-card p {
+  margin: 4px 0;
+  font-size: 0.875rem;
+}
+
+/* Buttons at bottom */
+.mu-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.mu-view-btn,
+.mu-edit-btn,
+.mu-delete-btn {
+  flex: 1;
+  border-radius: 6px;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
+  border: none;
+  cursor: pointer;
+  color: white;
+}
+
+.mu-view-btn {
+  background: var(--third-color);
+}
+.mu-view-btn:hover {
+  background: #005f8d;
+}
+
+.mu-edit-btn {
+  background: #f9a825;
+}
+.mu-edit-btn:hover {
+  background: #d68910;
+}
+
+.mu-delete-btn {
+  background: #e63946;
+}
+.mu-delete-btn:hover {
+  background: #c82333;
+}
+
+/* Modals */
+.mu-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.mu-modal-content {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  width: 400px;
+  max-width: 95%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.mu-modal-content h3 {
+  margin-bottom: 1rem;
+  color: #1e1e2f;
+}
+
+.mu-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.mu-cancel-btn {
+  background: #ccc;
+  color: #333;
+}
+.mu-cancel-btn:hover {
+  background: #b1b1b1;
+}
+
+.mu-confirm-btn {
+  background: #e63946;
+  color: white;
+}
+.mu-confirm-btn:hover {
+  background: #c82333;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .mu-card {
+    flex: 0 0 45%; /* 2 per row for tablets */
+  }
+}
+
+@media (max-width: 768px) {
+  /* .mu-filters {
+    flex-direction: column;
+    align-items: stretch;
+  } */
+
+  .mu-filters-card select {
+    width: 100%;
+  }
+
+  .mu-cards {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .mu-card {
+    flex: 0 0 90%; /* 1 per row on mobile */
+  }
+
+  .mu-card-actions {
+    flex-direction: column;
+  }
+
+  .mu-card-actions button {
+    width: 100%;
+  }
+}

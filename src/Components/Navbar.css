@@ -8,7 +8,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--bg-color); 
+  background: var(--bg-color); /* original background */
   color: white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   border-radius: 0 0 15px 15px;
@@ -20,26 +20,70 @@
 }
 
 .navbar-logo {
-  height: 40px;
+  height: 40px; /* original size */
   cursor: pointer;
 }
 
 .navbar-right {
+  position: relative;
   display: flex;
   align-items: center;
 }
 
-.logout-btn {
-  padding: 0.4rem 1rem;
-  background: #ff6f61;
-  border: none;
-  border-radius: 6px;
-  color: white;
-  font-weight: bold;
+/* Breadcrumb style replacing logout button */
+.breadcrumb {
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  font-size: 1rem;
+  padding: 0.4rem 0.8rem;
+  color: black;
+  border-radius: 6px;
   transition: background-color 0.2s ease-in-out;
 }
 
-.logout-btn:hover {
-  background: #e65b50;
+.breadcrumb:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.breadcrumb-icon {
+  margin-right: 0.4rem;
+  font-size: 1.3rem;
+}
+
+/* Dropdown overlay below breadcrumb */
+.breadcrumb-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--bg-color);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  display: flex;
+
+  flex-direction: column;
+  z-index: 1000;
+  width: 130px;
+  text-align: center;
+}
+
+.dropdown-item {
+  color: black;
+  padding: 0.4rem 0;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: color 0.2s ease;
+  border-bottom: 1px solid grey;
+}
+
+.dropdown-item:hover {
+  color: var(--third-color);
+}
+
+.l-out {
+  color: red;
+  border: none;
 }

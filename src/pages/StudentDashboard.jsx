@@ -21,6 +21,7 @@ const StudentDashboard = () => {
   const [downloadingAll, setDownloadingAll] = useState(false);
 
   const backend = process.env.REACT_APP_BACKEND_URL;
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     const fetchMeta = async () => {
@@ -30,16 +31,13 @@ const StudentDashboard = () => {
           API.get("/meta/branches"),
           API.get("/meta/subjects?populateBranch=true"),
         ]);
-
         setRegulations(regRes.data.regulations || []);
         setBranches(branchRes.data.branches || []);
         setSubjects(subjectRes.data.subjects || []);
       } catch (err) {
         console.error(err);
-        alert("Failed to fetch metadata");
       }
     };
-
     fetchMeta();
   }, []);
 
@@ -67,34 +65,53 @@ const StudentDashboard = () => {
 
     setLoading(true);
     try {
-      const res = await API.get(`/notes/subject/${selectedSubject}`);
-      setFilteredNotes(res.data.notes || []);
+      const res = await fetch(`${backend}/notes/subject/${selectedSubject}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to fetch notes");
+      const data = await res.json();
+      setFilteredNotes(data.notes || []);
       setSearchDone(true);
     } catch (err) {
       console.error(err);
       setFilteredNotes([]);
       setSearchDone(true);
-      // alert("Failed to fetch notes.");
     } finally {
       setLoading(false);
     }
   };
 
+  // ---------------- Download all notes as ZIP ----------------
   const handleDownloadAll = async () => {
     if (!filteredNotes.length) return;
     setDownloadingAll(true);
+
     try {
-      const zip = new JSZip();
       for (const note of filteredNotes) {
-        const res = await fetch(`${backend}/notes/${note._id}`);
-        const blob = await res.blob();
-        zip.file(`${note.title}.pdf`, blob);
+        if (!note.uploadedFiles?.length) continue;
+
+        for (const f of note.uploadedFiles) {
+          if (!f.fileUrl) continue;
+
+          const res = await fetch(f.fileUrl);
+          if (!res.ok) throw new Error(`Failed to fetch ${f.originalName}`);
+          const blob = await res.blob();
+
+          const cleanName = f.originalName.replace(/[\\/:"*?<>|]+/g, "_");
+
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = `${note.title}_${cleanName}`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+
+          await new Promise((r) => setTimeout(r, 300)); // small delay
+        }
       }
-      const content = await zip.generateAsync({ type: "blob" });
-      saveAs(content, "All_Notes.zip");
     } catch (err) {
-      console.error(err);
-      alert("Failed to download all notes.");
+      console.error("Error downloading files:", err);
+      alert("Failed to download all notes");
     } finally {
       setDownloadingAll(false);
     }
@@ -103,12 +120,9 @@ const StudentDashboard = () => {
   return (
     <div className="SD-container">
       <header className="header">
-        {/* <img className="rce" src={logo} alt="Kithab-logo" />
-        <div className="line"></div>
-          <div className="logo-separator"></div> */}
-
         <img className="kithab" src={logo} alt="Kithab-logo" />
       </header>
+
       <div className="background">
         {[...Array(8)].map((_, i) => (
           <span key={i} className="ball"></span>
@@ -117,11 +131,10 @@ const StudentDashboard = () => {
 
       <div className="dashboard-wrapper">
         <div className="content-stack">
-          {/* Search Section */}
+          {/* Filters */}
           <div className="search-section">
             <h2 className="search-title">Search Notes</h2>
             <div className="filters">
-              {/* Regulation */}
               <div className="filter-item">
                 <select
                   value={selectedRegulation}
@@ -143,7 +156,6 @@ const StudentDashboard = () => {
                 </select>
               </div>
 
-              {/* Branch */}
               <div className="filter-item">
                 <select
                   value={selectedBranch}
@@ -165,7 +177,6 @@ const StudentDashboard = () => {
                 </select>
               </div>
 
-              {/* Semester */}
               <div className="filter-item">
                 <select
                   value={selectedSemester}
@@ -186,7 +197,6 @@ const StudentDashboard = () => {
                 </select>
               </div>
 
-              {/* Subject */}
               <div className="filter-item">
                 <select
                   value={selectedSubject}
@@ -202,7 +212,6 @@ const StudentDashboard = () => {
                 </select>
               </div>
 
-              {/* Get Button */}
               <div className="filter-item get-btn-wrapper">
                 <button
                   className="get-btn"
@@ -215,7 +224,7 @@ const StudentDashboard = () => {
             </div>
           </div>
 
-          {/* Results Section */}
+          {/* Results */}
           <div className={`results-section ${searchDone ? "open" : ""}`}>
             <div className="results-inner">
               <h2 className="results-title">Search Results</h2>
@@ -225,10 +234,10 @@ const StudentDashboard = () => {
                 <>
                   <ul className="notes-list">
                     {filteredNotes.map((note) => (
-                      <Card key={note._id} note={note} backend={backend} />
+                      <Card key={note._id} note={note} />
                     ))}
                   </ul>
-                  {filteredNotes.length > 0 && (
+                  {/* {filteredNotes.length > 0 && (
                     <div className="download-all-wrapper">
                       <button
                         className="download-all-btn"
@@ -242,13 +251,12 @@ const StudentDashboard = () => {
                         )}
                       </button>
                     </div>
-                  )}
+                  )} */}
                 </>
               )}
             </div>
           </div>
 
-          {/* Carousel */}
           <Carousel />
         </div>
       </div>
