@@ -12,34 +12,34 @@ const NotesManager = () => {
   const [branches, setBranches] = useState([]);
   const [subjects, setSubjects] = useState([]);
 
-  // Filters / selection
+  // Filters
   const [selectedRegulation, setSelectedRegulation] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("");
   const [selectedSemester, setSelectedSemester] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
 
-  // Notes data
+  // Notes
   const [notes, setNotes] = useState([]);
   const [loadingNotes, setLoadingNotes] = useState(false);
   const [error, setError] = useState("");
-  const [searchPerformed, setSearchPerformed] = useState(false); // track if search done
+  const [searchPerformed, setSearchPerformed] = useState(false);
 
-  // Delete modal state
+  // Delete modal
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [noteToDelete, setNoteToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
-  // Faculty modal state
+  // Faculty modal
   const [showFacultyModal, setShowFacultyModal] = useState(false);
   const [selectedFaculty, setSelectedFaculty] = useState(null);
 
-  // ===== Fetch all meta data once on mount =====
+  // ===== Fetch meta data once =====
   useEffect(() => {
     if (!token) return;
 
-    const fetchAllMeta = async () => {
+    const fetchMeta = async () => {
       try {
-        const [regRes, branchRes, subjectRes] = await Promise.all([
+        const [regsRes, branchesRes, subjectsRes] = await Promise.all([
           API.get("/admin/regulations", {
             headers: { Authorization: `Bearer ${token}` },
           }),
@@ -51,37 +51,31 @@ const NotesManager = () => {
           }),
         ]);
 
-        setRegulations(Array.isArray(regRes.data) ? regRes.data : []);
+        setRegulations(regsRes.data || []);
 
-        const normBranches = (branchRes.data || []).map((b) => ({
+        const normBranches = (branchesRes.data || []).map((b) => ({
           ...b,
-          regulation:
-            b.regulation && typeof b.regulation === "object"
-              ? b.regulation._id || b.regulation
-              : b.regulation || null,
+          regulation: b.regulation?._id || b.regulation || null,
         }));
         setBranches(normBranches);
 
-        const normSubjects = (subjectRes.data || []).map((s) => ({
+        const normSubjects = (subjectsRes.data || []).map((s) => ({
           ...s,
-          branch:
-            s.branch && typeof s.branch === "object"
-              ? s.branch._id || s.branch
-              : s.branch || null,
+          branch: s.branch?._id || s.branch || null,
           semester: Number(s.semester?.$numberInt ?? s.semester ?? 0),
         }));
         setSubjects(normSubjects);
       } catch (err) {
-        console.error("Error fetching admin meta:", err);
+        console.error("Error fetching meta:", err);
         if (err.response?.status === 401) logout();
         else setError("Failed to load meta data");
       }
     };
 
-    fetchAllMeta();
+    fetchMeta();
   }, [token, logout]);
 
-  // Derived lists
+  // ===== Derived lists for filters =====
   const filteredBranches = branches.filter(
     (b) => String(b.regulation) === String(selectedRegulation)
   );
@@ -89,6 +83,7 @@ const NotesManager = () => {
   const selectedRegObj = regulations.find(
     (r) => String(r._id) === String(selectedRegulation)
   );
+
   const semesterOptions = selectedRegObj
     ? Array.from(
         { length: Number(selectedRegObj.numberOfSemesters || 0) },
@@ -104,41 +99,24 @@ const NotesManager = () => {
 
   // ===== Fetch notes =====
   const fetchNotes = async () => {
-    setError("");
+    if (
+      !selectedRegulation ||
+      !selectedBranch ||
+      !selectedSemester ||
+      !selectedSubject
+    )
+      return;
+
     setLoadingNotes(true);
     setSearchPerformed(true);
+    setError("");
 
     try {
-      const { data } = await API.get("/admin/notes", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const normalized = (data || []).map((n) => ({
-        ...n,
-        regulation:
-          n.regulation && typeof n.regulation === "object"
-            ? n.regulation._id || n.regulation
-            : n.regulation,
-        branch:
-          n.branch && typeof n.branch === "object"
-            ? n.branch._id || n.branch
-            : n.branch,
-        subject:
-          n.subject && typeof n.subject === "object"
-            ? n.subject._id || n.subject
-            : n.subject,
-        semester: Number(n.semester),
-      }));
-
-      const filtered = normalized.filter(
-        (n) =>
-          String(n.regulation) === String(selectedRegulation) &&
-          String(n.branch) === String(selectedBranch) &&
-          Number(n.semester) === Number(selectedSemester) &&
-          String(n.subject) === String(selectedSubject)
+      const { data } = await API.get(
+        `/admin/notes?regulation=${selectedRegulation}&branch=${selectedBranch}&semester=${selectedSemester}&subject=${selectedSubject}`,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      setNotes(filtered);
+      setNotes(data || []);
     } catch (err) {
       console.error("Error fetching notes:", err);
       if (err.response?.status === 401) logout();
@@ -149,31 +127,26 @@ const NotesManager = () => {
     }
   };
 
-  const downloadNote = async (noteId, filename, contentType) => {
+  // ===== Download / View note =====
+  const handleDownloadOrView = async (noteId) => {
+    if (!noteId) return;
+
     try {
-      const response = await API.get(`/admin/notes/${noteId}/file`, {
-        responseType: "blob",
+      const res = await API.get(`/admin/notes/${noteId}/file`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const blob = new Blob([response.data], {
-        type: contentType || response.data.type || "application/octet-stream",
-      });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename || "note";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+      const fileUrl = res.data?.url;
+      if (fileUrl) window.open(fileUrl, "_blank");
+      else alert("File not available");
     } catch (err) {
-      console.error("Failed to download note file", err);
+      console.error("Error fetching file URL:", err);
       if (err.response?.status === 401) logout();
-      else alert("Failed to download note file");
+      else alert("Cannot open file");
     }
   };
 
+  // ===== Delete note =====
   const handleDeleteClick = (note) => {
     setNoteToDelete(note);
     setShowDeleteModal(true);
@@ -181,6 +154,7 @@ const NotesManager = () => {
 
   const confirmDelete = async () => {
     if (!noteToDelete) return;
+
     setDeleting(true);
     try {
       await API.delete(`/admin/notes/${noteToDelete._id}`, {
@@ -199,15 +173,18 @@ const NotesManager = () => {
   };
 
   useEffect(() => {
+    // Reset notes when filters change
     setNotes([]);
     setSearchPerformed(false);
   }, [selectedRegulation, selectedBranch, selectedSemester, selectedSubject]);
 
+  // ===== Faculty modal =====
   const handleFacultyClick = (faculty) => {
     setSelectedFaculty(faculty || null);
     setShowFacultyModal(true);
   };
 
+  // ===== Clear filters =====
   const clearFilters = () => {
     setSelectedRegulation("");
     setSelectedBranch("");
@@ -224,6 +201,8 @@ const NotesManager = () => {
   return (
     <div className="notes-manager-container">
       <h2>Notes Manager (Admin)</h2>
+
+      {/* Filters */}
       <div className="filters">
         <select
           value={selectedRegulation}
@@ -281,9 +260,9 @@ const NotesManager = () => {
           disabled={!filteredSubjects.length}
         >
           <option value="">Select Subject</option>
-          {filteredSubjects.map((sub) => (
-            <option key={sub._id} value={sub._id}>
-              {sub.name}
+          {filteredSubjects.map((s) => (
+            <option key={s._id} value={s._id}>
+              {s.name}
             </option>
           ))}
         </select>
@@ -295,7 +274,6 @@ const NotesManager = () => {
         >
           Get Notes
         </button>
-
         <button className="add-btn" onClick={clearFilters}>
           Clear Filters
         </button>
@@ -303,55 +281,60 @@ const NotesManager = () => {
 
       {error && <p className="error-msg">{error}</p>}
 
+      {/* Notes Table */}
       <div className="table-container">
         {loadingNotes ? (
           <p>Loading notes...</p>
         ) : searchPerformed && notes.length === 0 ? (
           <p>No notes found</p>
-        ) : notes.length > 0 ? (
-          <table>
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Uploaded By</th>
-                <th>Uploaded Date</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {notes.map((note) => (
-                <tr key={note._id}>
-                  <td>{note.title}</td>
-                  <td
-                    className="clickable"
-                    onClick={() => handleFacultyClick(note.uploadedBy)}
-                  >
-                    {`${note.uploadedBy?.name || "—"} (${
-                      note.uploadedBy?.designation || "—"
-                    })`}
-                  </td>
-                  <td>{new Date(note.createdAt).toLocaleDateString()}</td>
-                  <td>
-                    <button
-                      className="action-btn"
-                      onClick={() => downloadNote(note._id, note.title)}
-                    >
-                      Download
-                    </button>
-                    <button
-                      className="btn-danger action-btn"
-                      onClick={() => handleDeleteClick(note)}
-                    >
-                      Delete
-                    </button>
-                  </td>
+        ) : (
+          notes.length > 0 && (
+            <table>
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Uploaded By</th>
+                  <th>Uploaded Date</th>
+                  <th>Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : null}
+              </thead>
+              <tbody>
+                {notes.map((note) => (
+                  <tr key={note._id}>
+                    <td>{note.title}</td>
+                    <td
+                      className="clickable"
+                      onClick={() => handleFacultyClick(note.uploadedBy)}
+                    >
+                      {note.uploadedBy
+                        ? `${note.uploadedBy.name} (${note.uploadedBy.designation})`
+                        : "—"}
+                    </td>
+                    <td>{new Date(note.createdAt).toLocaleDateString()}</td>
+                    <td>
+                      <button
+                        className="action-btn"
+                        onClick={() => handleDownloadOrView(note._id)}
+                        // disabled={!note.fileKey}
+                      >
+                        Download/View
+                      </button>
+                      <button
+                        className="btn-danger action-btn"
+                        onClick={() => handleDeleteClick(note)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )
+        )}
       </div>
 
+      {/* Delete Modal */}
       {showDeleteModal && (
         <div className="modal-overlay">
           <div className="modal">
@@ -378,7 +361,8 @@ const NotesManager = () => {
           </div>
         </div>
       )}
-      {/* faculty modal */}
+
+      {/* Faculty Modal */}
       {showFacultyModal && selectedFaculty && (
         <div className="modal-overlay">
           <div className="modal">
@@ -398,7 +382,7 @@ const NotesManager = () => {
               </p>
               <p>
                 <b>Uploaded Notes:</b>{" "}
-                {selectedFaculty.uploadedNotes?.length ?? "—"}
+                {selectedFaculty.uploadedNotes?.length ?? "0"}
               </p>
             </div>
             <div className="modal-actions">
