@@ -6,6 +6,7 @@ import logo from "../Assets/kithabImg.png";
 import Card from "../Components/Card.jsx";
 import Carousel from "../Components/Carousel.jsx";
 import "./StudentDashboard.css";
+import PullToRefresh from "pulltorefreshjs";
 
 const StudentDashboard = () => {
   const [filteredNotes, setFilteredNotes] = useState([]);
@@ -23,7 +24,26 @@ const StudentDashboard = () => {
   const backend = process.env.REACT_APP_BACKEND_URL;
   const token = localStorage.getItem("token");
 
+  // useEffect(() => {
+  //   const fetchMeta = async () => {
+  //     try {
+  //       const [regRes, branchRes, subjectRes] = await Promise.all([
+  //         API.get("/meta/regulations"),
+  //         API.get("/meta/branches"),
+  //         API.get("/meta/subjects?populateBranch=true"),
+  //       ]);
+  //       setRegulations(regRes.data.regulations || []);
+  //       setBranches(branchRes.data.branches || []);
+  //       setSubjects(subjectRes.data.subjects || []);
+  //     } catch (err) {
+  //       console.error(err);
+  //     }
+  //   };
+  //   fetchMeta();
+
+  // }, []);
   useEffect(() => {
+    // define fetch function
     const fetchMeta = async () => {
       try {
         const [regRes, branchRes, subjectRes] = await Promise.all([
@@ -35,11 +55,33 @@ const StudentDashboard = () => {
         setBranches(branchRes.data.branches || []);
         setSubjects(subjectRes.data.subjects || []);
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching metadata:", err);
       }
     };
+
+    // 🔹 Initial load
     fetchMeta();
-  }, []);
+
+    // 🔹 Initialize Pull-to-Refresh
+    const ptr = PullToRefresh.init({
+      mainElement: ".SD-container", // 👈 scrollable area from your CSS
+      onRefresh() {
+        // re-fetch metadata and notes when user pulls down
+        return fetchMeta();
+      },
+      instructionsPullToRefresh: "↓ Pull to refresh data",
+      instructionsReleaseToRefresh: "↻ Release to refresh",
+      instructionsRefreshing: "Refreshing data...",
+      refreshTimeout: 500,
+      distThreshold: 70,
+      distMax: 120,
+    });
+
+    // 🔹 Cleanup on unmount
+    return () => {
+      ptr.destroy();
+    };
+  }, []); // empty dependency → run only once
 
   const filteredBranches = branches.filter(
     (b) =>
