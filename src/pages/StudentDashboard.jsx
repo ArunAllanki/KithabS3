@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import JSZip from "jszip";
-import { saveAs } from "file-saver";
+// import JSZip from "jszip";
+// import { saveAs } from "file-saver";
 import API from "../services/api";
 import logo from "../Assets/kithabImg.png";
 import Card from "../Components/Card.jsx";
@@ -18,7 +18,7 @@ const StudentDashboard = () => {
   const [selectedSubject, setSelectedSubject] = useState("");
   const [searchDone, setSearchDone] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [downloadingAll, setDownloadingAll] = useState(false);
+  // const [downloadingAll, setDownloadingAll] = useState(false);
 
   const backend = process.env.REACT_APP_BACKEND_URL;
   const token = localStorage.getItem("token");
@@ -82,40 +82,40 @@ const StudentDashboard = () => {
   };
 
   // ---------------- Download all notes as ZIP ----------------
-  const handleDownloadAll = async () => {
-    if (!filteredNotes.length) return;
-    setDownloadingAll(true);
+  // const handleDownloadAll = async () => {
+  //   if (!filteredNotes.length) return;
+  //   setDownloadingAll(true);
 
-    try {
-      for (const note of filteredNotes) {
-        if (!note.uploadedFiles?.length) continue;
+  //   try {
+  //     for (const note of filteredNotes) {
+  //       if (!note.uploadedFiles?.length) continue;
 
-        for (const f of note.uploadedFiles) {
-          if (!f.fileUrl) continue;
+  //       for (const f of note.uploadedFiles) {
+  //         if (!f.fileUrl) continue;
 
-          const res = await fetch(f.fileUrl);
-          if (!res.ok) throw new Error(`Failed to fetch ${f.originalName}`);
-          const blob = await res.blob();
+  //         const res = await fetch(f.fileUrl);
+  //         if (!res.ok) throw new Error(`Failed to fetch ${f.originalName}`);
+  //         const blob = await res.blob();
 
-          const cleanName = f.originalName.replace(/[\\/:"*?<>|]+/g, "_");
+  //         const cleanName = f.originalName.replace(/[\\/:"*?<>|]+/g, "_");
 
-          const a = document.createElement("a");
-          a.href = URL.createObjectURL(blob);
-          a.download = `${note.title}_${cleanName}`;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
+  //         const a = document.createElement("a");
+  //         a.href = URL.createObjectURL(blob);
+  //         a.download = `${note.title}_${cleanName}`;
+  //         document.body.appendChild(a);
+  //         a.click();
+  //         a.remove();
 
-          await new Promise((r) => setTimeout(r, 300)); // small delay
-        }
-      }
-    } catch (err) {
-      console.error("Error downloading files:", err);
-      alert("Failed to download all notes");
-    } finally {
-      setDownloadingAll(false);
-    }
-  };
+  //         await new Promise((r) => setTimeout(r, 300)); // small delay
+  //       }
+  //     }
+  //   } catch (err) {
+  //     console.error("Error downloading files:", err);
+  //     alert("Failed to download all notes");
+  //   } finally {
+  //     setDownloadingAll(false);
+  //   }
+  // };
 
   return (
     <div className="SD-container">

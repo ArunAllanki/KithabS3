@@ -3,7 +3,7 @@ import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import MetaManager from "../Components/Admin/MetaManager.jsx";
 import NotesManager from "../Components/Admin/NotesManager.jsx";
-import UserManager from "../Components/Admin/UserManager.jsx";
+// import UserManager from "../Components/Admin/UserManager.jsx";
 import "./AdminDashboard.css";
 import logo from "../Assets/kithabImg.png";
 import RCE from "../Assets/RCE_logo.png";
