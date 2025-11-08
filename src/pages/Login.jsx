@@ -2,6 +2,7 @@ import { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import logo from "../Assets/kithabImg.png";
+import RCE from "../Assets/RCE_logo.png";
 import "./Login.css";
 
 const Login = () => {
@@ -64,8 +65,11 @@ const Login = () => {
 
       <div className="form-container">
         <form className="form" onSubmit={handleSubmit}>
-          <img className="logo" src={logo} alt="logo" />
-
+          <div className="logos">
+            <img className="RCE" src={RCE} alt="RCE" />
+            <span className="seperator"></span>
+            <img className="logo" src={logo} alt="logo" />
+          </div>
           <input
             type="text"
             placeholder="Login Id"
@@ -144,7 +148,7 @@ const Login = () => {
                 <option value="student">Student</option>
                 <option value="faculty">Faculty</option>
               </select> */}
-              
+
               <input
                 type="text"
                 placeholder="Emplyee ID"
@@ -158,11 +162,7 @@ const Login = () => {
 
               <div className="modal-btn-group">
                 <button type="submit" disabled={forgotLoading || forgotSuccess}>
-                  {forgotLoading ? (
-                    <span className="spinner" />
-                  ) : (
-                    "Reset"
-                  )}
+                  {forgotLoading ? <span className="spinner" /> : "Reset"}
                 </button>
                 <button
                   type="button"

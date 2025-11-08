@@ -6,6 +6,7 @@ import NotesManager from "../Components/Admin/NotesManager.jsx";
 import UserManager from "../Components/Admin/UserManager.jsx";
 import "./AdminDashboard.css";
 import logo from "../Assets/kithabImg.png";
+import RCE from "../Assets/RCE_logo.png";
 import FacultyManager from "../Components/Admin/FacultyManager.jsx";
 
 const AdminDashboard = () => {
@@ -55,7 +56,10 @@ const AdminDashboard = () => {
   return (
     <div className="admin-dashboard">
       <aside className="sidebar">
-        <img className="sidebar-logo" src={logo} alt="Logo" />
+        <div className="sidebar-logos">
+          <img className="sidebar-RCE" src={RCE} alt="RCE" />
+          <img className="sidebar-logo" src={logo} alt="Logo" />
+        </div>
         <h1 className="sidebar-title">Admin Panel</h1>
         <ul className="sidebar-list">
           <li

@@ -5,6 +5,7 @@
   width: 100vw;
   box-sizing: border-box;
   background: transparent;
+  scrollbar-width: none;
 }
 
 .FD-container .hero-container {
@@ -13,7 +14,7 @@
   gap: 2rem;
   padding: 1.5rem;
   box-sizing: border-box;
-  overflow-y: auto;
+  /* overflow-y: auto; */
 }
 
 .FD-container .part {
@@ -31,6 +32,10 @@
 }
 
 .FD-container .part::-webkit-scrollbar {
+  display: none;
+}
+
+.FD-container ::-webkit-scrollbar {
   display: none;
 }
 
@@ -63,7 +68,7 @@
   font-size: 0.95rem;
 }
 
-.warning{
+.warning {
   color: red;
   margin: 0;
 }
@@ -115,6 +120,10 @@
   font-weight: bold;
   margin: 0;
   margin-top: -20px;
+}
+
+.uploads {
+  margin-bottom: 10vh;
 }
 
 .FD-container .uploads h3 {

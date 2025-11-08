@@ -2,6 +2,7 @@ import React, { useContext, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Navbar.css";
 import logo from "../Assets/kithabImg.png";
+import RCE from "../Assets/RCE_logo.png";
 import { AuthContext } from "../context/AuthContext";
 import { GiHamburgerMenu } from "react-icons/gi";
 
@@ -32,6 +33,8 @@ const Navbar = ({ onNavigate }) => {
   return (
     <nav className="navbar">
       <div className="navbar-left">
+        <img src={RCE} alt="RCE" className="navbar-RCE"></img>
+        <span className="seperator"></span>
         <img src={logo} alt="Logo" className="navbar-logo" />
       </div>
 

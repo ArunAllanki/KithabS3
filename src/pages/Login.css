@@ -16,6 +16,11 @@ body {
   background-repeat: no-repeat;
   background-size: cover;
   z-index: 1;
+  overflow-y: auto; /* Allow vertical scroll */
+  overscroll-behavior: contain; /* Optional: control native bounce */
+  overflow: auto; /* or scroll */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
 }
 
 @keyframes move {
@@ -127,10 +132,27 @@ body {
   width: 100%;
 }
 
+.logos {
+  height: 7vh;
+  display: flex;
+  margin-bottom: 5%;
+  align-items: center;
+}
+
+.RCE {
+  height: 100%;
+}
+
 .logo {
-  width: 40%;
-  height: auto;
-  margin-bottom: 1rem;
+  width: auto;
+  height: 100%;
+}
+
+.seperator {
+  background: #000;
+  height: 80%;
+  width: 1.5px;
+  margin-inline: 10px;
 }
 
 .form-container {

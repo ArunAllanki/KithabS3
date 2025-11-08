@@ -17,11 +17,17 @@
 .navbar-left {
   display: flex;
   align-items: center;
+  height: 100%;
 }
 
 .navbar-logo {
-  height: 40px; /* original size */
-  cursor: pointer;
+  height: 90%;
+  width: auto;
+}
+
+.navbar-RCE {
+  height: 90%;
+  width: auto;
 }
 
 .navbar-right {

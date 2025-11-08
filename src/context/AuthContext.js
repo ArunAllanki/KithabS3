@@ -42,13 +42,16 @@ export const AuthProvider = ({ children }) => {
     if (id === process.env.REACT_APP_ADMIN_ID) {
       endpoint = "admin/login";
       body = { adminId: id, password };
-    } else if (id.startsWith("FAC")) {
+    }
+    // else if (id.startsWith("FAC")) {
+    else {
       endpoint = "faculty/login";
       body = { employeeId: id, password };
-    } else {
-      endpoint = "student/login";
-      body = { rollNumber: id, password };
     }
+    //  else {
+    //   endpoint = "student/login";
+    //   body = { rollNumber: id, password };
+    // }
 
     const url = `${backendBase.replace(/\/$/, "")}/auth/${endpoint}`;
 
