@@ -42,8 +42,8 @@ const StudentDashboard = () => {
   //   fetchMeta();
 
   // }, []);
+
   useEffect(() => {
-    // define fetch function
     const fetchMeta = async () => {
       try {
         const [regRes, branchRes, subjectRes] = await Promise.all([
@@ -59,29 +59,32 @@ const StudentDashboard = () => {
       }
     };
 
-    // 🔹 Initial load
+    // Initial fetch
     fetchMeta();
 
-    // 🔹 Initialize Pull-to-Refresh
+    // Pull-to-refresh setup
     const ptr = PullToRefresh.init({
-      mainElement: ".SD-container", // 👈 scrollable area from your CSS
+      mainElement: ".SD-container", // target your scroll container
       onRefresh() {
-        // re-fetch metadata and notes when user pulls down
         return fetchMeta();
       },
       instructionsPullToRefresh: "↓ Pull to refresh data",
       instructionsReleaseToRefresh: "↻ Release to refresh",
       instructionsRefreshing: "Refreshing data...",
-      refreshTimeout: 500,
       distThreshold: 70,
-      distMax: 120,
+      distMax: 100,
+      resistance: 2.2,
+
+      // 💡 Critical fix: only allow pull when at top
+      shouldPullToRefresh() {
+        const el = document.querySelector(".SD-container");
+        return el && el.scrollTop === 0;
+      },
     });
 
-    // 🔹 Cleanup on unmount
-    return () => {
-      ptr.destroy();
-    };
-  }, []); // empty dependency → run only once
+    // Cleanup
+    return () => ptr.destroy();
+  }, []);
 
   const filteredBranches = branches.filter(
     (b) =>
