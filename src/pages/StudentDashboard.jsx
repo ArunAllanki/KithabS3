@@ -24,25 +24,6 @@ const StudentDashboard = () => {
   const backend = process.env.REACT_APP_BACKEND_URL;
   const token = localStorage.getItem("token");
 
-  // useEffect(() => {
-  //   const fetchMeta = async () => {
-  //     try {
-  //       const [regRes, branchRes, subjectRes] = await Promise.all([
-  //         API.get("/meta/regulations"),
-  //         API.get("/meta/branches"),
-  //         API.get("/meta/subjects?populateBranch=true"),
-  //       ]);
-  //       setRegulations(regRes.data.regulations || []);
-  //       setBranches(branchRes.data.branches || []);
-  //       setSubjects(subjectRes.data.subjects || []);
-  //     } catch (err) {
-  //       console.error(err);
-  //     }
-  //   };
-  //   fetchMeta();
-
-  // }, []);
-
   useEffect(() => {
     const fetchMeta = async () => {
       try {
@@ -55,36 +36,55 @@ const StudentDashboard = () => {
         setBranches(branchRes.data.branches || []);
         setSubjects(subjectRes.data.subjects || []);
       } catch (err) {
-        console.error("Error fetching metadata:", err);
+        console.error(err);
       }
     };
-
-    // Initial fetch
     fetchMeta();
 
-    // Pull-to-refresh setup
-    const ptr = PullToRefresh.init({
-      mainElement: ".SD-container", // target your scroll container
-      onRefresh() {
-        return fetchMeta();
-      },
-      instructionsPullToRefresh: "↓ Pull to refresh data",
-      instructionsReleaseToRefresh: "↻ Release to refresh",
-      instructionsRefreshing: "Refreshing data...",
-      distThreshold: 70,
-      distMax: 100,
-      resistance: 2.2,
-
-      // 💡 Critical fix: only allow pull when at top
-      shouldPullToRefresh() {
-        const el = document.querySelector(".SD-container");
-        return el && el.scrollTop === 0;
-      },
-    });
-
-    // Cleanup
-    return () => ptr.destroy();
   }, []);
+
+  // useEffect(() => {
+  //   const fetchMeta = async () => {
+  //     try {
+  //       const [regRes, branchRes, subjectRes] = await Promise.all([
+  //         API.get("/meta/regulations"),
+  //         API.get("/meta/branches"),
+  //         API.get("/meta/subjects?populateBranch=true"),
+  //       ]);
+  //       setRegulations(regRes.data.regulations || []);
+  //       setBranches(branchRes.data.branches || []);
+  //       setSubjects(subjectRes.data.subjects || []);
+  //     } catch (err) {
+  //       console.error("Error fetching metadata:", err);
+  //     }
+  //   };
+
+  //   // Initial fetch
+  //   fetchMeta();
+
+  //   // Pull-to-refresh setup
+  //   const ptr = PullToRefresh.init({
+  //     mainElement: ".SD-container", // target your scroll container
+  //     onRefresh() {
+  //       return fetchMeta();
+  //     },
+  //     instructionsPullToRefresh: "↓ Pull to refresh data",
+  //     instructionsReleaseToRefresh: "↻ Release to refresh",
+  //     instructionsRefreshing: "Refreshing data...",
+  //     distThreshold: 70,
+  //     distMax: 100,
+  //     resistance: 2.2,
+
+  //     // 💡 Critical fix: only allow pull when at top
+  //     shouldPullToRefresh() {
+  //       const el = document.querySelector(".SD-container");
+  //       return el && el.scrollTop === 0;
+  //     },
+  //   });
+
+  //   // Cleanup
+  //   return () => ptr.destroy();
+  // }, []);
 
   const filteredBranches = branches.filter(
     (b) =>
