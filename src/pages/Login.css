@@ -17,8 +17,6 @@ body {
   background-size: cover;
   z-index: 1;
   overflow-y: auto; /* Allow vertical scroll */
-  overscroll-behavior: contain; /* Optional: control native bounce */
-  overflow: auto; /* or scroll */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
 }
