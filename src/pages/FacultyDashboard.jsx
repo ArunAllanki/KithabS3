@@ -10,7 +10,6 @@ const FacultyDashboard = () => {
   const { token, user } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // Persistent active section
   const [activeSection, setActiveSection] = useState(
     localStorage.getItem("facultyActiveSection") || "home"
   );
@@ -85,6 +84,21 @@ const FacultyDashboard = () => {
     )
       return alert("Please select all fields");
     if (!file) return alert("Please select a file");
+
+    const allowedTypes = [
+      "application/pdf",
+      "application/vnd.ms-powerpoint",
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      alert("Only PDF, PPT, or Word files are allowed.");
+      setFile(null);
+      return;
+    }
+
     if (file.size > 50 * 1024 * 1024) {
       alert("File size exceeds 50MB, try after compressing file");
       setFile(null);
@@ -125,6 +139,13 @@ const FacultyDashboard = () => {
           setUploadMessage(`✅ "${file.name}" uploaded successfully!`);
           setFile(null);
           setProgress(100);
+
+          setSelectedRegulation("");
+          setSelectedBranch("");
+          setSelectedSemester("");
+          setSelectedSubject("");
+          setFile(null);
+          setProgress(0);
         } else {
           setUploadMessage("❌ Upload failed. Try again.");
         }
@@ -142,10 +163,8 @@ const FacultyDashboard = () => {
       setLoading(false);
       setUploadMessage("❌ Upload failed. Try again.");
     }
-  };
 
-  const handleViewFile = (note) => {
-    if (note.fileUrl) window.open(note.fileUrl, "_blank");
+    setTimeout(() => setUploadMessage(""), 4000);
   };
 
   if (!token || user.role !== "faculty") return <p>Redirecting...</p>;
@@ -163,75 +182,89 @@ const FacultyDashboard = () => {
               <h2>Welcome, {user?.name}</h2>
               <h3>Upload Notes</h3>
 
-              <form className="upload-form" onSubmit={handleSubmit}>
-                <select
-                  value={selectedRegulation}
-                  onChange={(e) => setSelectedRegulation(e.target.value)}
-                  required
-                >
-                  <option value="">Select Regulation</option>
-                  {regulations.map((r) => (
-                    <option key={r._id} value={r._id}>
-                      {r.name}
-                    </option>
-                  ))}
-                </select>
+              <form
+                className={`upload-form ${loading ? "disabled-form" : ""}`}
+                onSubmit={handleSubmit}
+              >
+                <fieldset disabled={loading}>
+                  <select
+                    value={selectedRegulation}
+                    onChange={(e) => setSelectedRegulation(e.target.value)}
+                    required
+                  >
+                    <option value="">Select Regulation</option>
+                    {regulations.map((r) => (
+                      <option key={r._id} value={r._id}>
+                        {r.name}
+                      </option>
+                    ))}
+                  </select>
 
-                <select
-                  value={selectedBranch}
-                  onChange={(e) => setSelectedBranch(e.target.value)}
-                  required
-                  disabled={!selectedRegulation}
-                >
-                  <option value="">Select Branch</option>
-                  {filteredBranches.map((b) => (
-                    <option key={b._id} value={b._id}>
-                      {b.name}
-                    </option>
-                  ))}
-                </select>
+                  <select
+                    value={selectedBranch}
+                    onChange={(e) => setSelectedBranch(e.target.value)}
+                    required
+                    disabled={!selectedRegulation || loading}
+                  >
+                    <option value="">Select Branch</option>
+                    {filteredBranches.map((b) => (
+                      <option key={b._id} value={b._id}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
 
-                <select
-                  value={selectedSemester}
-                  onChange={(e) => setSelectedSemester(e.target.value)}
-                  required
-                  disabled={!selectedBranch}
-                >
-                  <option value="">Select Semester</option>
-                  {[...Array(8)].map((_, i) => (
-                    <option key={i + 1} value={i + 1}>
-                      {i + 1}
-                    </option>
-                  ))}
-                </select>
+                  <select
+                    value={selectedSemester}
+                    onChange={(e) => setSelectedSemester(e.target.value)}
+                    required
+                    disabled={!selectedBranch || loading}
+                  >
+                    <option value="">Select Semester</option>
+                    {[...Array(8)].map((_, i) => (
+                      <option key={i + 1} value={i + 1}>
+                        {i + 1}
+                      </option>
+                    ))}
+                  </select>
 
-                <select
-                  value={selectedSubject}
-                  onChange={(e) => setSelectedSubject(e.target.value)}
-                  required
-                  disabled={!selectedSemester}
-                >
-                  <option value="">Select Subject</option>
-                  {filteredSubjects.map((s) => (
-                    <option key={s._id} value={s._id}>
-                      {s.name} ({s.code})
-                    </option>
-                  ))}
-                </select>
+                  <select
+                    value={selectedSubject}
+                    onChange={(e) => setSelectedSubject(e.target.value)}
+                    required
+                    disabled={!selectedSemester || loading}
+                  >
+                    <option value="">Select Subject</option>
+                    {filteredSubjects.map((s) => (
+                      <option key={s._id} value={s._id}>
+                        {s.name} ({s.code})
+                      </option>
+                    ))}
+                  </select>
 
-                <input
-                  type="file"
-                  onChange={(e) => setFile(e.target.files[0])}
-                  required
-                  disabled={loading}
-                />
+                  <input
+                    type="file"
+                    onChange={(e) => setFile(e.target.files[0])}
+                    required
+                    disabled={loading}
+                  />
 
-                {uploadMessage && <p className="upload-msg">{uploadMessage}</p>}
-                {/* {loading && <p className="progress">{progress}%</p>} */}
-                  <p className="warning">The file name cannot be edited. Recheck before uploading.</p>
-                <button className="upload-btn" type="submit" disabled={loading}>
-                  {loading ? `Uploading ${progress}%` : "Upload"}
-                </button>
+                  {uploadMessage && (
+                    <p className="upload-msg">{uploadMessage}</p>
+                  )}
+
+                  <p className="warning">
+                    The file name cannot be edited. Recheck before uploading.
+                  </p>
+
+                  <button
+                    className="upload-btn"
+                    type="submit"
+                    disabled={loading}
+                  >
+                    {loading ? `Uploading ${progress}%` : "Upload"}
+                  </button>
+                </fieldset>
               </form>
             </div>
 
@@ -242,7 +275,7 @@ const FacultyDashboard = () => {
               ) : (
                 <ul className="uploads-list">
                   {uploads
-                    .slice(-5)
+                    .slice(-4)
                     .reverse()
                     .map((note) => (
                       <li key={note._id} className="upload-card">
@@ -252,9 +285,6 @@ const FacultyDashboard = () => {
                           {note.branch?.name} | <b>Subject:</b>{" "}
                           {note.subject?.name} | <b>Sem:</b> {note.semester}
                         </p>
-                        <button onClick={() => handleViewFile(note)}>
-                          View
-                        </button>
                       </li>
                     ))}
                 </ul>

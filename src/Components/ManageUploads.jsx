@@ -175,7 +175,7 @@ const ManageUploads = () => {
                   className="mu-view-btn"
                   onClick={() => window.open(u.fileUrl, "_blank")}
                 >
-                  View
+                  Download
                 </button>
                 <button
                   className="mu-delete-btn"

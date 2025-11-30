@@ -137,8 +137,11 @@ const NotesManager = () => {
       });
 
       const fileUrl = res.data?.url;
-      if (fileUrl) window.open(fileUrl, "_blank");
-      else alert("File not available");
+      if (fileUrl) {
+        window.open(fileUrl, "_blank");
+      } else {
+        alert("File not available");
+      }
     } catch (err) {
       console.error("Error fetching file URL:", err);
       if (err.response?.status === 401) logout();
@@ -274,7 +277,7 @@ const NotesManager = () => {
         >
           Get Notes
         </button>
-        <button className="add-btn" onClick={clearFilters}>
+        <button className="add-btn clear-btn" onClick={clearFilters}>
           Clear Filters
         </button>
       </div>
@@ -315,7 +318,6 @@ const NotesManager = () => {
                       <button
                         className="action-btn"
                         onClick={() => handleDownloadOrView(note._id)}
-                        // disabled={!note.fileKey}
                       >
                         Download/View
                       </button>

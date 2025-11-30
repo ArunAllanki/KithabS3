@@ -6,6 +6,7 @@ import "./FacultyManager.css";
 const FacultyManager = () => {
   const { token } = useContext(AuthContext);
 
+  const [masterFacultyList, setMasterFacultyList] = useState([]); // NEW: full original list
   const [facultyList, setFacultyList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -32,13 +33,17 @@ const FacultyManager = () => {
   const [uploads, setUploads] = useState([]);
   const [uploadsLoading, setUploadsLoading] = useState(false);
 
+  const [searchText, setSearchText] = useState(""); // NEW: search state
+
   const fetchFaculty = async () => {
     setLoading(true);
     try {
       const res = await API.get("/admin/faculty", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setFacultyList(res.data || []);
+      const data = res.data || [];
+      setMasterFacultyList(data); // store full list
+      setFacultyList(data); // visible list
     } catch (err) {
       console.error("Error fetching faculty", err);
       setError("Failed to fetch faculty");
@@ -78,14 +83,14 @@ const FacultyManager = () => {
         newErrors.password = "Password must be at least 6 characters";
     }
 
-    //checking dups in frontnd
-    const emailExists = facultyList.some(
+    // checking dups in frontend – use masterFacultyList (NOT filtered list)
+    const emailExists = masterFacultyList.some(
       (f) =>
         f.email === email && (!selectedFaculty || f._id !== selectedFaculty._id)
     );
     if (emailExists) newErrors.email = "Email already exists";
 
-    const idExists = facultyList.some(
+    const idExists = masterFacultyList.some(
       (f) =>
         f.employeeId === employeeId &&
         (!selectedFaculty || f._id !== selectedFaculty._id)
@@ -205,12 +210,58 @@ const FacultyManager = () => {
     setShowEditModal(true);
   };
 
+  // ---- Search handlers (NEW) ----
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchText(value);
+
+    const query = value.trim().toLowerCase();
+    if (!query) {
+      setFacultyList(masterFacultyList);
+      return;
+    }
+
+    const filtered = masterFacultyList.filter((f) =>
+      f.name.toLowerCase().includes(query)
+    );
+    setFacultyList(filtered);
+  };
+
+  const handleClearSearch = () => {
+    setSearchText("");
+    setFacultyList(masterFacultyList);
+  };
+
   return (
     <div className="faculty-manager-container">
       <h2>Faculty Manager (Admin)</h2>
-      <button className="add-btn" onClick={openAddModal}>
-        Add Faculty
-      </button>
+
+      {/* Top row: Add + Search */}
+      <div className="faculty-top-row">
+        <button className="add-btn" onClick={openAddModal}>
+          Add Faculty
+        </button>
+
+        <div className="faculty-search-wrapper">
+          <input
+            type="text"
+            className="faculty-search-input"
+            placeholder="Search faculty by name..."
+            value={searchText}
+            onChange={handleSearchChange}
+          />
+          {searchText && (
+            <button
+              type="button"
+              className="faculty-search-clear"
+              onClick={handleClearSearch}
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      </div>
+
       {error && <p className="error-msg">{error}</p>}
       <div className="table-container">
         {loading ? (
@@ -437,7 +488,7 @@ const FacultyManager = () => {
           </div>
         </div>
       )}
-      {/* delete modl */}
+      {/* delete modal */}
       {showDeleteModal && selectedFaculty && (
         <div className="modal-overlay">
           <div className="modal">
@@ -463,7 +514,7 @@ const FacultyManager = () => {
           </div>
         </div>
       )}
-      {/*upload modal */}
+      {/* uploads modal */}
       {showUploadsModal && selectedFaculty && (
         <div className="modal-overlay">
           <div className="modal">

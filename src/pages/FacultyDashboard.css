@@ -8,7 +8,6 @@
   scrollbar-width: none;
 }
 
-
 .FD-container .hero-container {
   flex: 1;
   display: flex;
@@ -59,6 +58,7 @@
 .FD-container .upload-btn {
   width: 50%;
   align-self: center;
+  margin-top: 15px;
 }
 
 .FD-container .upload-form input,
@@ -72,6 +72,21 @@
 .warning {
   color: red;
   margin: 0;
+}
+
+.upload-form fieldset {
+  border: none !important;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.disabled-form select,
+.disabled-form input,
+.disabled-form button {
+  opacity: 0.6;
 }
 
 .FD-container .upload-form button {
@@ -181,5 +196,6 @@
 
   .FD-container .part {
     flex: none;
+    height: auto;
   }
 }

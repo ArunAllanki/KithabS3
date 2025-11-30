@@ -3,10 +3,11 @@ import { useEffect, useState } from "react";
 // import { saveAs } from "file-saver";
 import API from "../services/api";
 import logo from "../Assets/kithabImg.png";
+import RCE from "../Assets/RCE_logo.png";
 import Card from "../Components/Card.jsx";
 import Carousel from "../Components/Carousel.jsx";
 import "./StudentDashboard.css";
-import PullToRefresh from "pulltorefreshjs";
+// import PullToRefresh from "pulltorefreshjs";
 
 const StudentDashboard = () => {
   const [filteredNotes, setFilteredNotes] = useState([]);
@@ -40,7 +41,6 @@ const StudentDashboard = () => {
       }
     };
     fetchMeta();
-
   }, []);
 
   // useEffect(() => {
@@ -165,7 +165,9 @@ const StudentDashboard = () => {
   return (
     <div className="SD-container">
       <header className="header">
-        <img className="kithab" src={logo} alt="Kithab-logo" />
+        <img src={RCE} alt="RCE" className="navbar-RCE"></img>
+        <span className="seperator"></span>
+        <img src={logo} alt="Logo" className="navbar-logo" />
       </header>
 
       <div className="background">
